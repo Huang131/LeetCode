@@ -100,6 +100,25 @@ class Solution:
 - r保存每次确定中心字符情况后的最大子串
 
 
+6. [ZigZag Conversion](https://leetcode-cn.com/problems/zigzag-conversion/)
+```python
+class Solution:
+    def convert(self, s: str, numRows: int) -> str:
+        if numRows == 1 or numRows >= len(s):
+            return s
+        L = [''] * numRows
+        index, step = 0, 1
+        for x in s:
+            L[index] += x
+            if index == 0:
+                step = 1  # 正向
+            elif index == numRows - 1:
+                step = -1  # 反向
+            index += step
+        return ''.join(L)
+```
+- step控制前进方向,最后把numRowsa行字符串合并
+
 7. [Reverse Integer](https://leetcode-cn.com/problems/reverse-integer/solution)
 ```python
 class Solution:
@@ -464,6 +483,28 @@ class Solution:
 ```
 - 暴力破解,更高效的算法有KMP,Boyer-Mooer算法和Rabin-Karp算法
 
+30. [Substring with Concatenation of All Words](https://leetcode-cn.com/problems/substring-with-concatenation-of-all-words/)
+```python
+class Solution:
+    def findSubstring(self, s: str, words: List[str]) -> List[int]:
+        from collections import Counter
+        if not s or not words:
+            return []
+        one_word = len(words[0])
+        all_len = len(words) * one_word
+        n = len(s)
+        words = Counter(words)
+        res = []
+        for i in range(0, n - all_len + 1):
+            tmp = s[i:i + all_len]
+            c_tmp = []
+            for j in range(0, all_len, one_word):
+                c_tmp.append(tmp[j:j + one_word])
+            if Counter(c_tmp) == words:
+                res.append(i)
+        return res
+```
+
 31. [Next Permutation](https://leetcode-cn.com/problems/next-permutation/)
 ```python
 class Solution:
@@ -709,7 +750,21 @@ class Solution:
                 water += top - height[i]
         return water
 ```
-
+43. [Multiply Strings](https://leetcode-cn.com/problems/multiply-strings/)
+```python
+import re
+import math
+class Solution:
+    def multiply(self, num1: str, num2: str) -> str:
+        d = {}
+        for i, n1 in enumerate(num1[::-1]):
+            for j, n2 in enumerate(num2[::-1]):
+                d[i + j] = d.get(i + j, 0) + (ord(n1) - 48) * (ord(n2) - 48)
+        for k in [*d]:
+            d[k+1], d[k] = d.get(k + 1, 0) + math.floor(d[k] * 0.1), d[k] % 10
+        return re.sub('^0*', '', ''.join(map(str, d.values()))[::-1]) or '0'
+```
+- 大数乘法
 
 
 44. [Wildcard Matching](https://leetcode-cn.com/problems/wildcard-matching/)
@@ -855,7 +910,12 @@ class Solution:
             nums[i] = max(nums[i], nums[i] + nums[i - 1])
         return max(nums)
 ```
-54. []()
+54. [Spiral Matrix](https://leetcode-cn.com/problems/spiral-matrix/)
+```python
+class Solution:
+    def spiralOrder(self, matrix: List[List[int]]) -> List[int]:
+        return matrix and [*matrix.pop(0)] + self.spiralOrder([*zip(*matrix)][::-1])
+```
 
 
 55. [Jump Game](https://leetcode-cn.com/problems/jump-game/)
@@ -911,6 +971,16 @@ class Solution:
 class Solution:
     def lengthOfLastWord(self, s: str) -> int:
         return len(s.strip(' ').split(' ')[-1])
+```
+
+59. [Spiral Matrix II](https://leetcode-cn.com/problems/spiral-matrix-ii/)
+```python
+class Solution:
+    def generateMatrix(self, n: int) -> List[List[int]]:
+        r, n = [[n**2]], n**2
+        while n > 1:
+            n, r = n - len(r), [[*range(n - len(r), n)]] + [*zip(*r[::-1])]
+        return r
 ```
 
 
@@ -1056,6 +1126,32 @@ class Solution:
 - 模拟二进制加法
 
 
+68. [Text Justification](https://leetcode-cn.com/problems/text-justification/solution/)
+```python
+class Solution:
+    def fullJustify(self, words: List[str], maxWidth: int) -> List[str]:
+        index, output = 0, []
+        while index < len(words):
+            total_len, temp = 0, []
+            # 每行尽可能多的单词
+            while index < len(words) and total_len + len(
+                    words[index]) + len(temp) <= maxWidth:
+                temp.append(words[index])
+                total_len += len(words[index])
+                index += 1
+
+            op, block = [] if not temp else [temp[0]], maxWidth - total_len
+            for i in range(1, len(temp)):
+                c = 1 if block % len(temp[i:]) else 0
+                chip = 1 if index == len(words) else min(
+                    block, block // len(temp[i:]) + c)
+                op.extend([" " * chip, temp[i]])
+                block -= chip
+            else:
+                op.extend([" " * block] if block > 0 else [])
+            output.append("".join(op))
+        return output
+```
 
 69. [Sqrt(x)](https://leetcode-cn.com/problems/sqrtx/)
 ```python
@@ -1899,6 +1995,26 @@ class Solution:
     2. 一个子节点：将这个子节点的 next 属性设置为同层的下一个节点，即为 root.next 的最左边的一个节点，如果 root.next 没有子节点，则考虑 root.next.next，依次类推
     3. 两个子节点:左子节点指向右子节点，然后右子节点同第二种情况的做法
 
+118. [Pascal's Triangle](https://leetcode-cn.com/problems/pascals-triangle/)
+```python
+class Solution:
+    def generate(self, numRows: int) -> List[List[int]]:
+        r = [[1]]
+        for i in range(1, numRows):
+            r.append([1] + [sum(r[-1][j:j + 2]) for j in range(i)])
+        return numRows and r or []
+```
+
+119. [Pascal's Triangle II](https://leetcode-cn.com/problems/pascals-triangle-ii/)
+
+```python
+class Solution:
+    def getRow(self, rowIndex: int) -> List[int]:
+        r = [1]
+        for i in range(1, rowIndex + 1):
+            r = [1] + [sum(r[j:j + 2]) for j in range(i)]
+        return r
+```
 
 
 120. [Triangle](https://leetcode-cn.com/problems/triangle/)
@@ -1941,6 +2057,47 @@ class Solution:
         return ok[-1]
 ```
 
+
+
+149. [Max Points on a Line](https://leetcode-cn.com/problems/max-points-on-a-line/)
+```python
+from math import gcd
+from collections import Counter
+
+
+class Solution:
+    def maxPoints(self, points: List[List[int]]) -> int:
+        if len(points) < 2:
+            return len(points)
+        points = [tuple(x) for x in points]
+        P = Counter(points)
+
+        def slop(p1, p2):  # 求出两点之间的斜率
+            dx, dy = p2[0] - p1[0], p2[1] - p1[1]
+            if dx == 0:
+                return (0, 1)
+            if dy == 0:
+                return (1, 0)
+            if dx < 0:
+                dx = -dx
+                dy = -dy
+            g = gcd(dx, dy)  # 最大公约数
+            return (dx // g, dy // g)
+
+        lines = [Counter() for _ in range(len(points))]
+        for i in range(1, len(points)):
+            for j in range(i):
+                if points[j] == points[i]:
+                    continue
+                k = slop(points[j], points[i])
+                # 记录过该点以k为斜率的直线个数
+                lines[i][k] += 1 
+                lines[j][k] += 1
+        ans = 0
+        for i, l in enumerate(lines):
+            ans = max(ans, max(l.values(), default=0) + P[points[i]])
+        return ans
+```
 
 1.   [Best Time to Buy and Sell Stock II](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-ii/)
 ```python
